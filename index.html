@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=0,minimal-ui">
+    <title>Party Progress Overlay</title>
+    <link rel="stylesheet" href="style.css?v=9">
+    <script src="overlay_plugin_api.js?v=2" defer></script>
+    <script src="main.js?v=10" defer></script>
+</head>
+
+<body>
+    <div id="overlay-container">
+        <div class="overlay-inner">
+            <div class="header">
+                <span class="title">小队副本进度</span>
+                <span id="status-text">等待数据...</span>
+            </div>
+            <div class="config-row">
+                <div class="custom-select" id="zone-quick-select-container">
+                    <div class="select-trigger" id="select-trigger">选择副本...</div>
+                    <div class="select-options" id="select-options">
+                        <div class="option" data-value="1321">阿卡狄亚登天零式斗技场 重量级1</div>
+                        <div class="option" data-value="1323">阿卡狄亚登天零式斗技场 重量级2</div>
+                        <div class="option" data-value="1327">阿卡狄亚登天零式斗技场 重量级3</div>
+                        <div class="option" data-value="1325">阿卡狄亚登天零式斗技场 重量级4</div>
+                    </div>
+                </div>
+                <button id="refresh-btn" class="refresh-btn">刷新</button>
+            </div>
+            <ul id="party-list">
+                <!-- Party members will be injected here -->
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
