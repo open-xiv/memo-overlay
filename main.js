@@ -453,7 +453,7 @@ function updateMemberStatus(id, data) {
 
     if (data.error) {
         cls = "error";
-        text = "Err";
+        text = "出错了";
     } else if (data.desc === "无记录") {
         cls = "unknown";
         text = "无记录";
@@ -502,11 +502,8 @@ function updateMemberStatus(id, data) {
                     pVal = data.progress > 100 ? data.progress / 100 : data.progress;
                     pFound = true;
                 } else if (typeof data.progress === 'object') {
-                    // 新逻辑: { enemy_hp: 0.123, phase: ... }
-                    // 假设 enemy_hp 是剩余血量百分比 (0.0 - 1.0)
-                    // 进度 = (1 - hp) * 100
                     if (typeof data.progress.enemy_hp === 'number') {
-                        pVal = (1 - data.progress.enemy_hp) * 100;
+                        pVal = data.progress.enemy_hp * 100;
                         pFound = true;
                     }
                 }
