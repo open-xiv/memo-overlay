@@ -189,7 +189,7 @@ let currentParty = [];
 // handlePartyChanged 已移除，逻辑整合至 refresh handler
 
 async function refreshPartyStatus() {
-    console.log(`[DEBUG] Refreshing party status for ${currentParty.length} members.`);
+    // console.log(`[DEBUG] Refreshing party status for ${currentParty.length} members.`);
 
     // 使用串行请求防止并发过高导致的数据混乱或 API 限制
     for (const member of currentParty) {
@@ -220,14 +220,14 @@ async function refreshPartyStatus() {
 
         if (!server) {
             server = "Unknown";
-            console.warn(`[DEBUG] Server Unknown for ${member.name}, ID: ${rawWorldId}`);
+            // console.warn(`[DEBUG] Server Unknown for ${member.name}, ID: ${rawWorldId}`);
         }
 
         // console.log(`[DEBUG] Fetching: ${member.name} @ ${server} (Zone: ${currentZoneId})`);
 
         try {
             const progress = await fetchMemberProgress(member.name, server, currentZoneId);
-            console.log(`[DEBUG] Result for ${member.name}:`, JSON.stringify(progress));
+            // console.log(`[DEBUG] Result for ${member.name}:`, JSON.stringify(progress));
             // Use contentId as unique identifier
             updateMemberStatus(member.contentId, progress);
         } catch (e) {
@@ -246,7 +246,7 @@ async function fetchMemberProgress(name, server, zoneId) {
         // 根据提供的 API 代码:
         // getMemberZoneBestProgress => GET /member/${name}@${server}/${zoneID}/best
         const url = `${API_BASE}/member/${encodeURIComponent(name)}@${encodeURIComponent(server)}/${encodeURIComponent(zoneId)}/best`;
-        console.log(`[DEBUG] API Request: ${url}`);
+        // console.log(`[DEBUG] API Request: ${url}`);
 
         const response = await fetch(url, {
             headers: {
