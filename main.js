@@ -436,6 +436,14 @@ function renderPartyList(party) {
     });
 }
 
+function ns2Time(ns){
+    seconds = Math.floor(ns / 1000 / 1000 / 1000);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 function updateMemberStatus(id, data) {
     const li = document.getElementById(`member-${id}`);
     if (!li) return;
@@ -445,7 +453,8 @@ function updateMemberStatus(id, data) {
 
     let cls = "unknown";
     let text = "未知";
-    let subText = ""; // 用于显示更新时间
+    let subText = ""; // 时间 战斗时长 死亡
+    let phaseText = ""; // 阶段(如有)
 
     if (data.error) {
         cls = "error";
@@ -476,19 +485,26 @@ function updateMemberStatus(id, data) {
                 if (ts < 20000000000) ts *= 1000;
             }
             subText = formatTimeAgo(ts);
+            try {
+                data.fight.players.forEach((player) => {
+                    if (player.name != data.name || player.server != data.server) return;
+                    if (player.death_count !== undefined && player.death_count !== null) {
+                        subText += "\n" + player.death_count + " 次死亡"
+                    }
+                    throw new Error("EVERYTHING BURNS!!"); // 跳出循环
+                });
+            } catch (e) {}
+            
         }
 
         // 2. 处理过本状态
-        // 兼容 data.clear (boolean) 和 data.cleared (boolean)
-        const isCleared = (data.clear === true) || (data.cleared === true);
 
-        if (isCleared) {
+        if (data.clear) {
             cls = "cleared";
             text = "已过本";
         } else {
             cls = "not-cleared";
             // 3. 进度处理
-            // data.progress 可能是一个数字 (0-10000?) 或者对象 { phase, enemy_hp, ... }
             let pVal = 0;
             let pFound = false;
 
@@ -503,6 +519,10 @@ function updateMemberStatus(id, data) {
                         pFound = true;
                     }
                 }
+                
+                if (data.progress.phase && data.progress.phase != "N/A"){
+                    phaseText = data.progress.phase;
+                }
             }
 
             if (pFound) {
@@ -514,8 +534,13 @@ function updateMemberStatus(id, data) {
                 text = "未过本";
             }
         }
+        
+        if (data.fight.duration !== undefined && data.fight.duration !== null){
+            subText += " 战斗时长 " + ns2Time(data.fight.duration)
+        }
+        
     }
 
     subInfo.innerText = subText;
-    container.innerHTML = `<span class="status ${cls}">${text}</span>`;
+    container.innerHTML = `<span class="status ${cls}">${text}</span><span class="phase-info">${phaseText}</span>`;
 }
