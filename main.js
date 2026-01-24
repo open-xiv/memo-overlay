@@ -136,6 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
         selectOptions.classList.remove("show");
     });
 
+    // 初始选择第一个选项
+    if (options[0]) {
+        ({ dataset: { value: currentZoneId }, innerText: selectTrigger.innerText } = options[0]);
+    }
+
     // Refresh Button Logic
     const refreshBtn = document.getElementById("refresh-btn");
     refreshBtn.addEventListener("click", () => {
