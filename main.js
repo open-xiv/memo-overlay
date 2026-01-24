@@ -15,13 +15,13 @@ const MOCK_PARTY = [
 ];
 
 const MOCK_PROGRESS_DATA = {
-    "1001": { clear: true, updated_at: Date.now() - 3600000 },
-    "1002": { clear: false, progress: { enemy_hp: 0.45, enemy_id: 123 }, updated_at: Date.now() - 7200000 },
-    "1003": { clear: false, progress: { enemy_hp: 0.12, enemy_id: 123 }, updated_at: Date.now() - 86400000 },
-    "1004": { cleared: true, fight: { start_time: Date.now() - 172800000 } },
-    "1005": { clear: false, progress: { enemy_hp: 0, enemy_id: 0 } },
+    "1001": { clear: true, updated_at: Date.now() - 3600000, fight: { start_time: Date.now() - 3600000, duration: 549118443900, players: [{ name: "测试玩家一", death_count: 0 }] } },
+    "1002": { clear: false, progress: { enemy_hp: 0.45, enemy_id: 123 }, updated_at: Date.now() - 7200000, fight: { start_time: Date.now() - 7200000, duration: 480000000000, players: [{ name: "测试玩家二", death_count: 1 }] } },
+    "1003": { clear: false, progress: { enemy_hp: 0.12, enemy_id: 123 }, updated_at: Date.now() - 86400000, fight: { start_time: Date.now() - 86400000, duration: 300000000000, players: [{ name: "测试玩家三", death_count: 3 }] } },
+    "1004": { clear: true, fight: { start_time: Date.now() - 172800000, duration: 500000000000, players: [{ name: "测试玩家四", death_count: 0 }] } },
+    "1005": { clear: false, progress: { enemy_hp: 0, enemy_id: 0 }, fight: { start_time: Date.now() - 3600000, duration: 0, players: [] } },
     "1006": { error: true },
-    "1007": { clear: false, progress: 7500, updated_at: Date.now() - 300000 },
+    "1007": { clear: false, progress: 7500, updated_at: Date.now() - 300000, fight: { start_time: Date.now() - 300000, duration: 549118443900, players: [{ name: "测试玩家七", death_count: 2 }] } },
     "1008": { desc: "无记录" },
 };
 
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // console.log(`[DEBUG] Combat state changed:", e);
         overlayContainer.style.display = e.detail.inGameCombat ? "none" : "block";
     });
-    
+
     // 监听小队变化
     addOverlayListener("PartyChanged", (e) => {
         // console.log(`[DEBUG] Party changed:", e);
@@ -135,6 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", () => {
         selectOptions.classList.remove("show");
     });
+
+    // 初始选择第一个选项
+    if (options[0]) {
+        ({ dataset: { value: currentZoneId }, innerText: selectTrigger.innerText } = options[0]);
+    }
 
     // Refresh Button Logic
     const refreshBtn = document.getElementById("refresh-btn");
@@ -195,38 +200,9 @@ async function refreshPartyStatus() {
     for (const member of currentParty) {
         if (!member.inParty) continue;
 
-        // 模拟模式：使用模拟数据
-        if (typeof MOCK_MODE !== 'undefined' && MOCK_MODE) {
-            try {
-                const progress = await getMockProgress(member.contentId);
-                console.log(`[DEBUG] Mock result for ${member.name}:`, JSON.stringify(progress));
-                updateMemberStatus(member.contentId, progress);
-            } catch (e) {
-                console.error(`[DEBUG] Error fetching mock ${member.name}:`, e);
-                updateMemberStatus(member.contentId, { error: true });
-            }
-            continue;
-        }
-
-        let server = member.WorldName || member.worldName;
-        const rawWorldId = member.worldId;
-
-        if (rawWorldId && WORLD_ID_MAP[rawWorldId]) {
-            server = WORLD_ID_MAP[rawWorldId];
-        } else if (!server && rawWorldId) {
-            // Fallback if not in map and no server name provided
-            server = "Unknown";
-        }
-
-        if (!server) {
-            server = "Unknown";
-            // console.warn(`[DEBUG] Server Unknown for ${member.name}, ID: ${rawWorldId}`);
-        }
-
-        // console.log(`[DEBUG] Fetching: ${member.name} @ ${server} (Zone: ${currentZoneId})`);
-
         try {
-            const progress = await fetchMemberProgress(member.name, server, currentZoneId);
+            const server = WORLD_ID_MAP[member.worldId] || "Unknown";
+            const progress = MOCK_MODE ? await getMockProgress(member.contentId) : await fetchMemberProgress(member.name, server, currentZoneId);
             // console.log(`[DEBUG] Result for ${member.name}:`, JSON.stringify(progress));
             // Use contentId as unique identifier
             updateMemberStatus(member.contentId, progress);
@@ -436,11 +412,11 @@ function renderPartyList(party) {
     });
 }
 
-function ns2Time(ns){
+function ns2Time(ns) {
     seconds = Math.floor(ns / 1000 / 1000 / 1000);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
+
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
@@ -455,6 +431,7 @@ function updateMemberStatus(id, data) {
     let text = "未知";
     let subText = ""; // 时间 战斗时长 死亡
     let phaseText = ""; // 阶段(如有)
+    let progressPercent = 0; // 攻略进度
 
     if (data.error) {
         cls = "error";
@@ -493,8 +470,8 @@ function updateMemberStatus(id, data) {
                     }
                     throw new Error("EVERYTHING BURNS!!"); // 跳出循环
                 });
-            } catch (e) {}
-            
+            } catch (e) { }
+
         }
 
         // 2. 处理过本状态
@@ -502,6 +479,7 @@ function updateMemberStatus(id, data) {
         if (data.clear) {
             cls = "cleared";
             text = "已过本";
+            progressPercent = 100;
         } else {
             cls = "not-cleared";
             // 3. 进度处理
@@ -519,8 +497,8 @@ function updateMemberStatus(id, data) {
                         pFound = true;
                     }
                 }
-                
-                if (data.progress.phase && data.progress.phase != "N/A"){
+
+                if (data.progress.phase && data.progress.phase != "N/A") {
                     phaseText = data.progress.phase;
                 }
             }
@@ -530,15 +508,31 @@ function updateMemberStatus(id, data) {
                 if (pVal < 0) pVal = 0;
                 if (pVal > 100) pVal = 100;
                 text = `${pVal.toFixed(1)}%`;
+                progressPercent = 100 - pVal;
             } else {
                 text = "未过本";
             }
         }
-        
-        if (data.fight.duration !== undefined && data.fight.duration !== null){
+
+        if (data.fight.duration !== undefined && data.fight.duration !== null) {
             subText += " 战斗时长 " + ns2Time(data.fight.duration)
         }
-        
+
+        // 背景进度填充颜色
+        let color = "transparent";
+        if (progressPercent > 0) {
+            if (data.clear) {
+                color = "#2ecc711a"; // 已过本
+            } else if (progressPercent >= 90) {
+                color = "#f1c40f1a"; // 90% 以上
+            } else if (progressPercent >= 50) {
+                color = "#e67e221a"; // 50% 以上
+            } else {
+                color = "#e74c3c1a"; // 50% 以下
+            }
+        }
+        li.style.setProperty('--progress-width', `${progressPercent}%`);
+        li.style.setProperty('--progress-fill', color);
     }
 
     subInfo.innerText = subText;
