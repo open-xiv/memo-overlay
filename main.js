@@ -15,13 +15,13 @@ const MOCK_PARTY = [
 ];
 
 const MOCK_PROGRESS_DATA = {
-    "1001": { clear: true, updated_at: Date.now() - 3600000 },
-    "1002": { clear: false, progress: { enemy_hp: 0.45, enemy_id: 123 }, updated_at: Date.now() - 7200000 },
-    "1003": { clear: false, progress: { enemy_hp: 0.12, enemy_id: 123 }, updated_at: Date.now() - 86400000 },
-    "1004": { cleared: true, fight: { start_time: Date.now() - 172800000 } },
-    "1005": { clear: false, progress: { enemy_hp: 0, enemy_id: 0 } },
+    "1001": { clear: true, updated_at: Date.now() - 3600000, fight: { start_time: Date.now() - 3600000, duration: 549118443900, players: [{ name: "测试玩家一", death_count: 0 }] } },
+    "1002": { clear: false, progress: { enemy_hp: 0.45, enemy_id: 123 }, updated_at: Date.now() - 7200000, fight: { start_time: Date.now() - 7200000, duration: 480000000000, players: [{ name: "测试玩家二", death_count: 1 }] } },
+    "1003": { clear: false, progress: { enemy_hp: 0.12, enemy_id: 123 }, updated_at: Date.now() - 86400000, fight: { start_time: Date.now() - 86400000, duration: 300000000000, players: [{ name: "测试玩家三", death_count: 3 }] } },
+    "1004": { clear: true, fight: { start_time: Date.now() - 172800000, duration: 500000000000, players: [{ name: "测试玩家四", death_count: 0 }] } },
+    "1005": { clear: false, progress: { enemy_hp: 0, enemy_id: 0 }, fight: { start_time: Date.now() - 3600000, duration: 0, players: [] } },
     "1006": { error: true },
-    "1007": { clear: false, progress: 7500, updated_at: Date.now() - 300000 },
+    "1007": { clear: false, progress: 7500, updated_at: Date.now() - 300000, fight: { start_time: Date.now() - 300000, duration: 549118443900, players: [{ name: "测试玩家七", death_count: 2 }] } },
     "1008": { desc: "无记录" },
 };
 
@@ -195,38 +195,9 @@ async function refreshPartyStatus() {
     for (const member of currentParty) {
         if (!member.inParty) continue;
 
-        // 模拟模式：使用模拟数据
-        if (typeof MOCK_MODE !== 'undefined' && MOCK_MODE) {
-            try {
-                const progress = await getMockProgress(member.contentId);
-                console.log(`[DEBUG] Mock result for ${member.name}:`, JSON.stringify(progress));
-                updateMemberStatus(member.contentId, progress);
-            } catch (e) {
-                console.error(`[DEBUG] Error fetching mock ${member.name}:`, e);
-                updateMemberStatus(member.contentId, { error: true });
-            }
-            continue;
-        }
-
-        let server = member.WorldName || member.worldName;
-        const rawWorldId = member.worldId;
-
-        if (rawWorldId && WORLD_ID_MAP[rawWorldId]) {
-            server = WORLD_ID_MAP[rawWorldId];
-        } else if (!server && rawWorldId) {
-            // Fallback if not in map and no server name provided
-            server = "Unknown";
-        }
-
-        if (!server) {
-            server = "Unknown";
-            // console.warn(`[DEBUG] Server Unknown for ${member.name}, ID: ${rawWorldId}`);
-        }
-
-        // console.log(`[DEBUG] Fetching: ${member.name} @ ${server} (Zone: ${currentZoneId})`);
-
         try {
-            const progress = await fetchMemberProgress(member.name, server, currentZoneId);
+            const server = WORLD_ID_MAP[member.worldId] || "Unknown";
+            const progress = MOCK_MODE ? await getMockProgress(member.contentId) : await fetchMemberProgress(member.name, server, currentZoneId);
             // console.log(`[DEBUG] Result for ${member.name}:`, JSON.stringify(progress));
             // Use contentId as unique identifier
             updateMemberStatus(member.contentId, progress);
