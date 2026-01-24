@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // console.log(`[DEBUG] Combat state changed:", e);
         overlayContainer.style.display = e.detail.inGameCombat ? "none" : "block";
     });
-    
+
     // 监听小队变化
     addOverlayListener("PartyChanged", (e) => {
         // console.log(`[DEBUG] Party changed:", e);
@@ -436,11 +436,11 @@ function renderPartyList(party) {
     });
 }
 
-function ns2Time(ns){
+function ns2Time(ns) {
     seconds = Math.floor(ns / 1000 / 1000 / 1000);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
+
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
@@ -493,8 +493,8 @@ function updateMemberStatus(id, data) {
                     }
                     throw new Error("EVERYTHING BURNS!!"); // 跳出循环
                 });
-            } catch (e) {}
-            
+            } catch (e) { }
+
         }
 
         // 2. 处理过本状态
@@ -519,8 +519,8 @@ function updateMemberStatus(id, data) {
                         pFound = true;
                     }
                 }
-                
-                if (data.progress.phase && data.progress.phase != "N/A"){
+
+                if (data.progress.phase && data.progress.phase != "N/A") {
                     phaseText = data.progress.phase;
                 }
             }
@@ -534,11 +534,11 @@ function updateMemberStatus(id, data) {
                 text = "未过本";
             }
         }
-        
-        if (data.fight.duration !== undefined && data.fight.duration !== null){
+
+        if (data.fight.duration !== undefined && data.fight.duration !== null) {
             subText += " 战斗时长 " + ns2Time(data.fight.duration)
         }
-        
+
     }
 
     subInfo.innerText = subText;
