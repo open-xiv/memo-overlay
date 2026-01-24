@@ -74,7 +74,8 @@ body {
     color: var(--text-color);
     overflow: hidden;
     font-size: 14px;
-    -webkit-user-select:none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 /* 外层容器 - 金色边框 */
 #overlay-container {
@@ -266,13 +267,14 @@ body {
 
 .member-row {
     display: flex;
-    align-items: center;
     padding: 6px 8px;
     margin-bottom: 6px;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
     transition: all 0.2s ease;
+    height: 44px;
+    box-sizing: border-box;
     /* 角色卡底部进度条 */
     background-image: linear-gradient(to right, var(--progress-fill, transparent) var(--progress-width, 0%), transparent var(--progress-width, 0%));
 }
@@ -315,12 +317,14 @@ body {
 .sub-info {
     font-size: 0.75em;
     color: var(--text-muted);
+    min-height: 1.25em;
 }
 
 .phase-info {
     font-size: 0.75em;
     color: var(--text-muted);
-    padding-left: 0.5em ;
+    padding-left: 0.5em;
+    min-height: 1.25em;
 }
 
 .status-container {
