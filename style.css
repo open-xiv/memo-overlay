@@ -273,6 +273,8 @@ body {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid transparent;
     transition: all 0.2s ease;
+    /* 角色卡底部进度条 */
+    background-image: linear-gradient(to right, var(--progress-fill, transparent) var(--progress-width, 0%), transparent var(--progress-width, 0%));
 }
 
 .member-row:last-child {

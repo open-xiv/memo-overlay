@@ -455,6 +455,7 @@ function updateMemberStatus(id, data) {
     let text = "未知";
     let subText = ""; // 时间 战斗时长 死亡
     let phaseText = ""; // 阶段(如有)
+    let progressPercent = 0; // 攻略进度
 
     if (data.error) {
         cls = "error";
@@ -502,6 +503,7 @@ function updateMemberStatus(id, data) {
         if (data.clear) {
             cls = "cleared";
             text = "已过本";
+            progressPercent = 100;
         } else {
             cls = "not-cleared";
             // 3. 进度处理
@@ -530,6 +532,7 @@ function updateMemberStatus(id, data) {
                 if (pVal < 0) pVal = 0;
                 if (pVal > 100) pVal = 100;
                 text = `${pVal.toFixed(1)}%`;
+                progressPercent = 100 - pVal;
             } else {
                 text = "未过本";
             }
@@ -539,6 +542,21 @@ function updateMemberStatus(id, data) {
             subText += " 战斗时长 " + ns2Time(data.fight.duration)
         }
 
+        // 背景进度填充颜色
+        let color = "transparent";
+        if (progressPercent > 0) {
+            if (data.clear) {
+                color = "#2ecc711a"; // 已过本
+            } else if (progressPercent >= 90) {
+                color = "#f1c40f1a"; // 90% 以上
+            } else if (progressPercent >= 50) {
+                color = "#e67e221a"; // 50% 以上
+            } else {
+                color = "#e74c3c1a"; // 50% 以下
+            }
+        }
+        li.style.setProperty('--progress-width', `${progressPercent}%`);
+        li.style.setProperty('--progress-fill', color);
     }
 
     subInfo.innerText = subText;
